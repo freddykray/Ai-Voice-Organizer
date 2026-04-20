@@ -14,10 +14,11 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class SpeechToTextService {
 
@@ -27,9 +28,37 @@ public class SpeechToTextService {
     @Value("${stt.url}")
     private String sttUrl;
 
+    public SpeechToTextService(
+            RestTemplate restTemplate,
+            @Value("${stt.url}") String sttUrl
+    ) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = new ObjectMapper();
+        this.sttUrl = sttUrl;
+    }
+
     public String transcribeOgg(Path oggPath) {
-        Path fileWav = convertOggToWav(oggPath);
-        return transcribeVoice(fileWav);
+        Path wavPath = null;
+
+        try {
+            wavPath = convertOggToWav(oggPath);
+            return transcribeVoice(wavPath);
+        } finally {
+            deleteFileQuietly(oggPath);
+            deleteFileQuietly(wavPath);
+        }
+    }
+
+    private void deleteFileQuietly(Path path) {
+        if (path == null) {
+            return;
+        }
+
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            log.error("Не удалось удалить временный файл: {}", path, e);
+        }
     }
 
     private String transcribeVoice(Path audioPath) {
@@ -74,6 +103,7 @@ public class SpeechToTextService {
         Path outputPath = buildWavFilePath(inputPath);
         ProcessBuilder processBuilder = buildFfmpegProcess(inputPath, outputPath);
         runConversion(processBuilder);
+        log.info("Файл конвертирован в wav: {}", outputPath);
         return outputPath;
     }
 

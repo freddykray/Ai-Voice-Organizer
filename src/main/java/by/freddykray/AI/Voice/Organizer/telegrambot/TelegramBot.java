@@ -51,32 +51,25 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
         } else if (update.hasMessage() && update.getMessage().hasVoice()) {
             Path downloadedVoiceFile = downloadVoiceFile(update);
             String textFromVoiceFile = stt.transcribeOgg(downloadedVoiceFile);
+            log.info("Распознан текст: {}", textFromVoiceFile);
             createAndSendMessage(update, textFromVoiceFile);
-            deleteVoice(downloadedVoiceFile);
+
         }
 
     }
 
-    private void deleteVoice(Path oggPath) {
-        Path wavPath = stt.convertOggToWav(oggPath);
-        try {
-            Files.deleteIfExists(oggPath);
-        } catch (IOException e) {
-            log.error("Не удалось удалить ogg файл: {}", oggPath, e);
-        }
-
-        try {
-            Files.deleteIfExists(wavPath);
-        } catch (IOException e) {
-            log.error("Не удалось удалить wav файл: {}", wavPath, e);
-        }
-    }
 
     public Path downloadVoiceFile(Update update) {
         String fileId = update.getMessage().getVoice().getFileId();
         File fileVoice = fileService.getVoiceFile(fileId);
-        return fileService.downloadVoiceFile(fileVoice.getFilePath());
 
+        log.info("Получен filePath голосового сообщения из Telegram: {}", fileVoice.getFilePath());
+
+        Path downloadedFile = fileService.downloadVoiceFile(fileVoice.getFilePath());
+
+        log.info("Голосовое сообщение скачано локально: {}", downloadedFile);
+
+        return downloadedFile;
     }
 
     public void createAndSendMessage(Update update, String text) {
