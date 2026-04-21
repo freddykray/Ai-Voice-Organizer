@@ -5,3 +5,11 @@ databaseChangeLog:
       file: db/changelog/002-create-telegram-user-table.yaml
   - include:
       file: db/changelog/003-create-user-dialog-state-table.yaml
+  - include:
+      file: db/changelog/004-create-reminder-table.yaml
+  - include:
+      file: db/changelog/005-create-idea-table.yaml
+
+
+
+

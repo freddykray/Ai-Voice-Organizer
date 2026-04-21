@@ -8,7 +8,9 @@ import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 import static by.freddykray.jooq.generated.tables.Task.TASK;
 
@@ -25,10 +27,23 @@ public class TaskRepository {
                 .set(TASK.DEADLINE, request.getDeadline().atOffset(ZoneOffset.UTC))
                 .set(TASK.HAS_EXACT_TIME, request.isHasExactTime())
                 .set(TASK.STATUS, TaskStatus.ACTIVE.name())
-                .set(TASK.REMIND_AT, !request.isHasExactTime() ? null :  request.getRemindAt().atOffset(ZoneOffset.UTC))
+                .set(TASK.REMIND_AT, calculateRemindAt(request))
                 .set(TASK.REMINDER_SENT, false)
                 .set(TASK.CREATED_AT, Instant.now().atOffset(ZoneOffset.UTC))
                 .returning()
                 .fetchOneInto(Task.class);
+    }
+
+    private OffsetDateTime calculateRemindAt(RequestTask request) {
+        if (!request.isHasExactTime()) {
+            return null;
+        }
+
+        Instant deadline = request.getDeadline();
+        if (deadline == null) {
+            return null;
+        }
+        Instant remindAt = deadline.minus(request.getRemindBefore(), ChronoUnit.HOURS);
+        return remindAt.atOffset(ZoneOffset.UTC);
     }
 }

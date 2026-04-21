@@ -174,7 +174,7 @@
                         <database>
                             <name>org.jooq.meta.postgres.PostgresDatabase</name>
                             <inputSchema>public</inputSchema>
-                            <includes>task|telegram_user|user_dialog_state</includes>
+                            <includes>task|telegram_user|user_dialog_state|idea|reminder</includes>
                         </database>
 
                         <target>

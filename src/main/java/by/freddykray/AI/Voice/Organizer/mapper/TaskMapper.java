@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TaskMapper {
 
-    RequestTask toModelRequestTask(long chatId, RequestTaskDto dto);
+    RequestTask toModelRequestTask(long chatId, int remindBefore, RequestTaskDto dto);
 
     @Mapping(target = "chatId", source = "chatId")
     @Mapping(target = "title", source = "title")

@@ -27,6 +27,15 @@ public class UserDialogStateRepository {
 
     }
 
+    public void saveTempRemindHour(long userId) {
+        dsl.insertInto(USER_DIALOG_STATE)
+                .set(USER_DIALOG_STATE.USER_ID, userId)
+                .set(USER_DIALOG_STATE.STATE, DialogState.WAITING_REMIND_HOURS.name())
+                .set(USER_DIALOG_STATE.PAYLOAD, "Укажите время за сколько часов до дедлайна напоминать")
+                .set(USER_DIALOG_STATE.CREATED_AT, Instant.now().atOffset(ZoneOffset.UTC))
+                .execute();
+    }
+
     public UserDialogState getOne(long chatId) {
         return dsl.selectFrom(USER_DIALOG_STATE)
                 .where(USER_DIALOG_STATE.USER_ID.eq(chatId))
@@ -40,7 +49,7 @@ public class UserDialogStateRepository {
                 .isPresent();
     }
 
-    public void deleteTempTaskWithoutDeadline(long userId) {
+    public void deleteTempRecord(long userId) {
         dsl.deleteFrom(USER_DIALOG_STATE)
                 .where(USER_DIALOG_STATE.USER_ID.eq(userId))
                 .execute();

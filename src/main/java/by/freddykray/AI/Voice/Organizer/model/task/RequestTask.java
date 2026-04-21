@@ -13,5 +13,6 @@ public class RequestTask {
     private String title;
     private Instant deadline;
     private boolean hasExactTime;
+    private int remindBefore;
     private Instant remindAt;
 }

@@ -19,7 +19,11 @@ public class UserDialogStateService {
         return userDialogStateRepository.getOne(chatId);
     }
 
-    public void deleteTempTaskWithoutDeadline(long chatId) {
-        userDialogStateRepository.deleteTempTaskWithoutDeadline(chatId);
+    public void saveTempRemindHour(long chatId) {
+        userDialogStateRepository.saveTempRemindHour(chatId);
+    }
+
+    public void deleteTempRecord(long chatId) {
+        userDialogStateRepository.deleteTempRecord(chatId);
     }
 }
