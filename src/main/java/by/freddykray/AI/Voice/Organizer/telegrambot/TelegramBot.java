@@ -1,5 +1,7 @@
 package by.freddykray.AI.Voice.Organizer.telegrambot;
 
+import by.freddykray.AI.Voice.Organizer.dto.ParsedTaskDto;
+import by.freddykray.AI.Voice.Organizer.llm.LlmService;
 import by.freddykray.AI.Voice.Organizer.telegrambot.services.SpeechToTextService;
 import by.freddykray.AI.Voice.Organizer.telegrambot.services.TelegramFileService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,9 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
     @Autowired
     private TelegramFileService fileService;
 
+    @Autowired
+    private LlmService llmService;
+
     public TelegramBot(@Value("${telegram.bot.token}") String token) {
         telegramClient = new OkHttpTelegramClient(token);
     }
@@ -52,7 +57,9 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
             Path downloadedVoiceFile = downloadVoiceFile(update);
             String textFromVoiceFile = stt.transcribeOgg(downloadedVoiceFile);
             log.info("Распознан текст: {}", textFromVoiceFile);
-            createAndSendMessage(update, textFromVoiceFile);
+            ParsedTaskDto parsedTask = llmService.parseTaskCommand(textFromVoiceFile);
+
+            createAndSendMessage(update, textFromVoiceFile, parsedTask.toString());
 
         }
 
@@ -72,8 +79,8 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
         return downloadedFile;
     }
 
-    public void createAndSendMessage(Update update, String text) {
-        SendMessage message = createMessage(update, text);
+    public void createAndSendMessage(Update update, String text, String textllm) {
+        SendMessage message = createMessage(update, text, textllm);
         sendMessage(message);
     }
 
@@ -85,11 +92,11 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
         }
     }
 
-    public SendMessage createMessage(Update update, String text) {
+    public SendMessage createMessage(Update update, String text, String textllm) {
         Long chatId = update.getMessage().getChatId();
         return SendMessage.builder()
                 .chatId(chatId.toString())
-                .text("Это голосовое сообщение " + text)
+                .text("Это голосовое сообщение " + text + "\n А это от ллм: " + textllm)
                 .build();
     }
 
