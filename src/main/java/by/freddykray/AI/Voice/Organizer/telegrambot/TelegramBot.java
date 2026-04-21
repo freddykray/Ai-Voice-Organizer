@@ -1,7 +1,6 @@
 package by.freddykray.AI.Voice.Organizer.telegrambot;
 
-import by.freddykray.AI.Voice.Organizer.dto.ParsedTaskDto;
-import by.freddykray.AI.Voice.Organizer.llm.LlmService;
+import by.freddykray.AI.Voice.Organizer.service.CommandOrchestrator;
 import by.freddykray.AI.Voice.Organizer.telegrambot.services.SpeechToTextService;
 import by.freddykray.AI.Voice.Organizer.telegrambot.services.TelegramFileService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +14,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Slf4j
@@ -25,13 +22,13 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
     private final TelegramClient telegramClient;
 
     @Autowired
-    private SpeechToTextService stt;
+    private CommandOrchestrator commandOrchestrator;
 
     @Autowired
     private TelegramFileService fileService;
 
     @Autowired
-    private LlmService llmService;
+    private SpeechToTextService stt;
 
     public TelegramBot(@Value("${telegram.bot.token}") String token) {
         telegramClient = new OkHttpTelegramClient(token);
@@ -39,32 +36,39 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
 
     @Override
     public void consume(Update update) {
+        if (!hasProcessableMessage(update)) {
+            return;
+        }
+        long chatId = update.getMessage().getChatId();
+        String text = extractText(update);
 
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            String text = update.getMessage().getText();
-            Long chatId = update.getMessage().getChatId();
-
-            SendMessage message = SendMessage.builder()
-                    .chatId(chatId.toString())
-                    .text("Ты написал: " + text)
-                    .build();
-            try {
-                telegramClient.execute(message);
-            } catch (TelegramApiException e) {
-                throw new RuntimeException(e);
-            }
-        } else if (update.hasMessage() && update.getMessage().hasVoice()) {
-            Path downloadedVoiceFile = downloadVoiceFile(update);
-            String textFromVoiceFile = stt.transcribeOgg(downloadedVoiceFile);
-            log.info("Распознан текст: {}", textFromVoiceFile);
-            ParsedTaskDto parsedTask = llmService.parseTaskCommand(textFromVoiceFile);
-
-            createAndSendMessage(update, textFromVoiceFile, parsedTask.toString());
-
+        if (text == null) {
+            return;
         }
 
+        String response = commandOrchestrator.processMessage(chatId, text);
+
+        if ("ASK_DEADLINE".equals(response)) {
+            askDeadline(chatId);
+            return;
+        }
+        createAndSendMessage(chatId, response);
     }
 
+    private String extractText(Update update) {
+        if (update.getMessage().hasVoice()) {
+            Path downloadedVoiceFile = downloadVoiceFile(update);
+            String text = stt.transcribeOgg(downloadedVoiceFile);
+            log.info("Распознан текст: {}", text);
+            return text;
+        }
+
+        if (update.getMessage().hasText()) {
+            return update.getMessage().getText();
+        }
+
+        return null;
+    }
 
     public Path downloadVoiceFile(Update update) {
         String fileId = update.getMessage().getVoice().getFileId();
@@ -79,8 +83,22 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
         return downloadedFile;
     }
 
-    public void createAndSendMessage(Update update, String text, String textllm) {
-        SendMessage message = createMessage(update, text, textllm);
+    private boolean hasProcessableMessage(Update update) {
+        return update.hasMessage()
+                && (update.getMessage().hasVoice() || update.getMessage().hasText());
+    }
+
+    public void askDeadline(long chatId) {
+        SendMessage message = SendMessage.builder()
+                .chatId(String.valueOf(chatId))
+                .text("Укажи дедлайн для задачи. ")
+                .build();
+
+        sendMessage(message);
+    }
+
+    public void createAndSendMessage(long chatId, String text) {
+        SendMessage message = createMessage(chatId, text);
         sendMessage(message);
     }
 
@@ -92,11 +110,10 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
         }
     }
 
-    public SendMessage createMessage(Update update, String text, String textllm) {
-        Long chatId = update.getMessage().getChatId();
+    public SendMessage createMessage(long chatId, String text) {
         return SendMessage.builder()
-                .chatId(chatId.toString())
-                .text("Это голосовое сообщение " + text + "\n А это от ллм: " + textllm)
+                .chatId(chatId)
+                .text(text)
                 .build();
     }
 

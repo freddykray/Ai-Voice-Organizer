@@ -1,11 +1,10 @@
 package by.freddykray.AI.Voice.Organizer.dto;
 
+import by.freddykray.AI.Voice.Organizer.model.ParsedCommandType;
 import lombok.Data;
 
 @Data
-public class ParsedTaskDto {
+public class RequestTypeDto {
 
     private ParsedCommandType type;
-    private String title;
-    private String deadline;
 }

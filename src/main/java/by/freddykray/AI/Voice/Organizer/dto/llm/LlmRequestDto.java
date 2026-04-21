@@ -1,4 +1,4 @@
-package by.freddykray.AI.Voice.Organizer.dto;
+package by.freddykray.AI.Voice.Organizer.dto.llm;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
