@@ -33,6 +33,7 @@ public class PromptRegistry {
             case DETECT_TYPE -> staticPrompts.get(type);
             case PARSE_TASK -> buildParseTaskPrompt();
             case PARSE_DEADLINE -> buildParseDeadlinePrompt();
+            case PARSE_REMINDER -> buildParseReminderPrompt();
             default -> throw new IllegalArgumentException("Неизвестный тип prompt: " + type);
         };
     }
@@ -109,5 +110,47 @@ public class PromptRegistry {
                 - не добавляй другие поля
                 - не добавляй текст вне JSON
                 """.formatted(now);
+    }
+
+    private String buildParseReminderPrompt() {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+
+        return """
+            Ты парсер команды пользователя для создания напоминания.
+
+            Текущая дата и время: %s
+            Часовой пояс: UTC
+
+            Верни только JSON.
+            Без пояснений.
+            Без текста вне JSON.
+            Без дополнительных полей.
+
+            Формат ответа:
+            {
+              "type": "REMINDER",
+              "title": "string",
+              "description": "string | null",
+              "deadline": "ISO-8601 UTC string | null",
+              "hasExactTime": true
+            }
+
+            Правила:
+            - type всегда REMINDER
+            - title — краткая и точная суть напоминания
+            - description — дополнительное описание, если оно явно есть в тексте, иначе null
+            - deadline:
+              - если пользователь указал дату и время, верни дедлайн в формате ISO-8601 UTC
+              - если пользователь указал только дату без времени, всё равно верни дедлайн в формате ISO-8601 UTC
+              - если пользователь не указал дедлайн, верни null
+            - hasExactTime:
+              - true, если пользователь указал точное время
+              - false, если пользователь указал только дату или не указал дедлайн
+            - если указана только дата без времени, ставь время 00:00:00Z
+            - используй текущую дату и время как точку отсчёта для слов "завтра", "послезавтра", "в пятницу", "через час"
+            - не придумывай лишние данные
+            - не добавляй другие поля
+            - не добавляй текст вне JSON
+            """.formatted(now);
     }
 }

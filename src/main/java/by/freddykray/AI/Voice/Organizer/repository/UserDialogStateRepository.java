@@ -27,11 +27,11 @@ public class UserDialogStateRepository {
 
     }
 
-    public void saveTempRemindHour(long userId) {
+    public void saveTempRemindHour(String title , long userId) {
         dsl.insertInto(USER_DIALOG_STATE)
                 .set(USER_DIALOG_STATE.USER_ID, userId)
                 .set(USER_DIALOG_STATE.STATE, DialogState.WAITING_REMIND_HOURS.name())
-                .set(USER_DIALOG_STATE.PAYLOAD, "Укажите время за сколько часов до дедлайна напоминать")
+                .set(USER_DIALOG_STATE.PAYLOAD, title)
                 .set(USER_DIALOG_STATE.CREATED_AT, Instant.now().atOffset(ZoneOffset.UTC))
                 .execute();
     }
@@ -42,11 +42,13 @@ public class UserDialogStateRepository {
                 .fetchOneInto(UserDialogState.class);
     }
 
-    public boolean isCheckRecordUser(long chatId) {
-        return dsl.selectFrom(USER_DIALOG_STATE)
+    public DialogState getStateDialogUser(long chatId) {
+        String state = dsl.select(USER_DIALOG_STATE.STATE)
+                .from(USER_DIALOG_STATE)
                 .where(USER_DIALOG_STATE.USER_ID.eq(chatId))
-                .fetchOptional()
-                .isPresent();
+                .fetchOne(USER_DIALOG_STATE.STATE);
+        return state == null ? null : DialogState.valueOf(state);
+
     }
 
     public void deleteTempRecord(long userId) {

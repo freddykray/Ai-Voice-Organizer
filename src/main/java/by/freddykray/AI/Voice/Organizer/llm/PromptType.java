@@ -8,5 +8,7 @@ public enum PromptType {
 
     PARSE_DEADLINE,
 
+    PARSE_REMINDER,
+
     CHAT_REPLY
 }

@@ -1,5 +1,6 @@
 package by.freddykray.AI.Voice.Organizer.service.userdialogstate;
 
+import by.freddykray.AI.Voice.Organizer.model.DialogState;
 import by.freddykray.AI.Voice.Organizer.model.UserDialogState;
 import by.freddykray.AI.Voice.Organizer.repository.UserDialogStateRepository;
 import lombok.AllArgsConstructor;
@@ -11,16 +12,20 @@ public class UserDialogStateService {
 
     private final UserDialogStateRepository userDialogStateRepository;
 
-    public boolean checkStateDialog(long chatId) {
-        return userDialogStateRepository.isCheckRecordUser(chatId);
+    public DialogState getStateDialogUser(long chatId) {
+        return userDialogStateRepository.getStateDialogUser(chatId);
     }
 
     public UserDialogState getOne(long chatId) {
         return userDialogStateRepository.getOne(chatId);
     }
 
-    public void saveTempRemindHour(long chatId) {
-        userDialogStateRepository.saveTempRemindHour(chatId);
+    public void saveTempTaskWithoutDeadline(String payload, long chatId) {
+        userDialogStateRepository.saveTempTaskWithoutDeadline(payload, chatId);
+    }
+
+    public void saveTempRemindHour(String payload, long chatId) {
+        userDialogStateRepository.saveTempRemindHour(payload,chatId);
     }
 
     public void deleteTempRecord(long chatId) {
