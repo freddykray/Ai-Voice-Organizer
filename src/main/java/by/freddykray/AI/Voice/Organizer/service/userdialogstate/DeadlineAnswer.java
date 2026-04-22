@@ -6,7 +6,7 @@ import by.freddykray.AI.Voice.Organizer.llm.PromptType;
 import by.freddykray.AI.Voice.Organizer.mapper.TaskMapper;
 import by.freddykray.AI.Voice.Organizer.model.DialogState;
 import by.freddykray.AI.Voice.Organizer.model.UserDialogState;
-import by.freddykray.AI.Voice.Organizer.service.TelegramUserService;
+import by.freddykray.AI.Voice.Organizer.service.telegramuser.TelegramUserService;
 import by.freddykray.AI.Voice.Organizer.service.task.TaskService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

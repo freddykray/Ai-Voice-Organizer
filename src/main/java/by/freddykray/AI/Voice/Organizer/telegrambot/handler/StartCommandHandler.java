@@ -1,6 +1,6 @@
 package by.freddykray.AI.Voice.Organizer.telegrambot.handler;
 
-import by.freddykray.AI.Voice.Organizer.service.TelegramUserService;
+import by.freddykray.AI.Voice.Organizer.service.telegramuser.TelegramUserService;
 import by.freddykray.AI.Voice.Organizer.telegrambot.keyboard.KeyboardFactory;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;

@@ -7,6 +7,8 @@ import org.jooq.DSLContext;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import static by.freddykray.jooq.generated.tables.UserDialogState.USER_DIALOG_STATE;
@@ -22,7 +24,7 @@ public class UserDialogStateRepository {
                 .set(USER_DIALOG_STATE.USER_ID, userId)
                 .set(USER_DIALOG_STATE.STATE, DialogState.WAITING_FOR_DEADLINE.name())
                 .set(USER_DIALOG_STATE.PAYLOAD, title)
-                .set(USER_DIALOG_STATE.CREATED_AT, Instant.now().atOffset(ZoneOffset.UTC))
+                .set(USER_DIALOG_STATE.CREATED_AT, OffsetDateTime.now(ZoneId.of("Europe/Moscow")))
                 .execute();
 
     }
@@ -32,7 +34,7 @@ public class UserDialogStateRepository {
                 .set(USER_DIALOG_STATE.USER_ID, userId)
                 .set(USER_DIALOG_STATE.STATE, DialogState.WAITING_REMIND_HOURS.name())
                 .set(USER_DIALOG_STATE.PAYLOAD, title)
-                .set(USER_DIALOG_STATE.CREATED_AT, Instant.now().atOffset(ZoneOffset.UTC))
+                .set(USER_DIALOG_STATE.CREATED_AT, OffsetDateTime.now(ZoneId.of("Europe/Moscow")))
                 .execute();
     }
 

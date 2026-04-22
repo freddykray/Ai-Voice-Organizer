@@ -1,7 +1,7 @@
 package by.freddykray.AI.Voice.Organizer.service.userdialogstate;
 
 import by.freddykray.AI.Voice.Organizer.model.DialogState;
-import by.freddykray.AI.Voice.Organizer.service.TelegramUserService;
+import by.freddykray.AI.Voice.Organizer.service.telegramuser.TelegramUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 

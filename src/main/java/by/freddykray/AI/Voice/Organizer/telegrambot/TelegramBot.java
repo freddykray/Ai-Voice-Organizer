@@ -1,11 +1,10 @@
 package by.freddykray.AI.Voice.Organizer.telegrambot;
 
-import by.freddykray.AI.Voice.Organizer.service.TelegramUserService;
+import by.freddykray.AI.Voice.Organizer.model.DialogState;
 import by.freddykray.AI.Voice.Organizer.telegrambot.services.SpeechToTextService;
 import by.freddykray.AI.Voice.Organizer.telegrambot.services.TelegramFileService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.File;
@@ -20,16 +19,22 @@ public class TelegramBot implements LongPollingSingleThreadUpdateConsumer {
 
     private final TelegramFileService fileService;
     private final SpeechToTextService stt;
-    private final TextMessageRouter textMessageRouter;
+    private final UpdateRouter updateRouter;
 
     @Override
     public void consume(Update update) {
+        if (update.hasCallbackQuery()) {
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+            String callbackData = update.getCallbackQuery().getData();
+            updateRouter.routeCallback(chatId, callbackData, update.getCallbackQuery().getId());
+            return;
+        }
         if (!hasProcessableMessage(update)) {
             return;
         }
         long chatId = update.getMessage().getChatId();
         String text = extractText(update);
-        textMessageRouter.route(chatId, text);
+        updateRouter.routeText(chatId, text);
     }
 
     private String extractText(Update update) {

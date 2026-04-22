@@ -1,6 +1,7 @@
 package by.freddykray.AI.Voice.Organizer.repository;
 
 import by.freddykray.AI.Voice.Organizer.model.task.RequestTask;
+import by.freddykray.AI.Voice.Organizer.model.task.ResponseTask;
 import by.freddykray.AI.Voice.Organizer.model.task.Task;
 import by.freddykray.AI.Voice.Organizer.model.task.TaskStatus;
 import lombok.AllArgsConstructor;
@@ -9,8 +10,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import static by.freddykray.jooq.generated.tables.Task.TASK;
 
@@ -24,14 +27,35 @@ public class TaskRepository {
         return dsl.insertInto(TASK)
                 .set(TASK.USER_ID, request.getChatId())
                 .set(TASK.TITLE, request.getTitle())
-                .set(TASK.DEADLINE, request.getDeadline().atOffset(ZoneOffset.UTC))
+                .set(TASK.DEADLINE, request.getDeadline().atZone(ZoneId.of("Europe/Moscow")).toOffsetDateTime())
                 .set(TASK.HAS_EXACT_TIME, request.isHasExactTime())
                 .set(TASK.STATUS, TaskStatus.ACTIVE.name())
                 .set(TASK.REMIND_AT, calculateRemindAt(request))
                 .set(TASK.REMINDER_SENT, false)
-                .set(TASK.CREATED_AT, Instant.now().atOffset(ZoneOffset.UTC))
+                .set(TASK.CREATED_AT, OffsetDateTime.now(ZoneId.of("Europe/Moscow")))
                 .returning()
                 .fetchOneInto(Task.class);
+    }
+
+    public void deleteTask(long taskId) {
+        dsl.deleteFrom(TASK)
+                .where(TASK.ID.eq(taskId))
+                .execute();
+    }
+
+    public List<ResponseTask> getAllTaskUser(long chatId) {
+        return dsl.selectFrom(TASK)
+                .where(TASK.USER_ID.eq(chatId))
+                .and(TASK.STATUS.eq(TaskStatus.ACTIVE.name()))
+                .orderBy(TASK.DEADLINE.asc().nullsLast())
+                .fetchInto(ResponseTask.class);
+    }
+
+    public void completeTask(long taskId) {
+        dsl.update(TASK)
+                .set(TASK.STATUS, TaskStatus.DONE.name())
+                .where(TASK.ID.eq(taskId))
+                .execute();
     }
 
     private OffsetDateTime calculateRemindAt(RequestTask request) {
@@ -44,6 +68,6 @@ public class TaskRepository {
             return null;
         }
         Instant remindAt = deadline.minus(request.getRemindBefore(), ChronoUnit.HOURS);
-        return remindAt.atOffset(ZoneOffset.UTC);
+        return remindAt.atZone(ZoneId.of("Europe/Moscow")).toOffsetDateTime();
     }
 }

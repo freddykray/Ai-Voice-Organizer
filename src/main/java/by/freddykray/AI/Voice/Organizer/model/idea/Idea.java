@@ -1,4 +1,4 @@
-package by.freddykray.AI.Voice.Organizer.model;
+package by.freddykray.AI.Voice.Organizer.model.idea;
 
 import lombok.Data;
 

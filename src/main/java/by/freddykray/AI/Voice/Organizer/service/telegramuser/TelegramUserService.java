@@ -1,4 +1,4 @@
-package by.freddykray.AI.Voice.Organizer.service;
+package by.freddykray.AI.Voice.Organizer.service.telegramuser;
 
 import by.freddykray.AI.Voice.Organizer.repository.TelegramUserRepository;
 import lombok.AllArgsConstructor;

@@ -2,7 +2,9 @@ package by.freddykray.AI.Voice.Organizer.telegrambot.handler;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 @Component
@@ -30,6 +32,15 @@ public class TelegramMessageSender implements MessageSender {
         try {
             telegramClient.execute(message);
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void answerCallback(String callbackQueryId) {
+        try {
+            telegramClient.execute(new AnswerCallbackQuery(callbackQueryId));
+        } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
     }
