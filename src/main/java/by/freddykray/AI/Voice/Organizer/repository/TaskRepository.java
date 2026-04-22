@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -49,6 +48,22 @@ public class TaskRepository {
                 .and(TASK.STATUS.eq(TaskStatus.ACTIVE.name()))
                 .orderBy(TASK.DEADLINE.asc().nullsLast())
                 .fetchInto(ResponseTask.class);
+    }
+
+    public List<Task> findTasksForReminder() {
+        return dsl.selectFrom(TASK)
+                .where(TASK.REMIND_AT.isNotNull())
+                .and(TASK.REMINDER_SENT.eq(false))
+                .and(TASK.STATUS.eq(TaskStatus.ACTIVE.name()))
+                .and(TASK.REMIND_AT.le(OffsetDateTime.now(ZoneId.of("Europe/Moscow"))))
+                .fetchInto(Task.class);
+    }
+
+    public void markReminderSent(long taskId) {
+        dsl.update(TASK)
+                .set(TASK.REMINDER_SENT, true)
+                .where(TASK.ID.eq(taskId))
+                .execute();
     }
 
     public void completeTask(long taskId) {

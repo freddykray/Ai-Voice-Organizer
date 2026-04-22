@@ -7,6 +7,7 @@ import java.time.Instant;
 @Data
 public class Reminder {
 
+    private long id;
     private long chatId;
     private String title;
     private String description;

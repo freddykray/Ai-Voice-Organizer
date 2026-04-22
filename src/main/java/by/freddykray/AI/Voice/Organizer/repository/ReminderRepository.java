@@ -19,6 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static by.freddykray.jooq.generated.tables.Reminder.REMINDER;
+import static by.freddykray.jooq.generated.tables.Task.TASK;
 
 @Repository
 @AllArgsConstructor
@@ -53,6 +54,13 @@ public class ReminderRepository {
         dsl.delete(REMINDER)
                 .where(REMINDER.ID.eq(reminderId))
                 .execute();
+    }
+    public List<Reminder> findRemindersToSend() {
+        return dsl.selectFrom(REMINDER)
+                .where(REMINDER.DEADLINE.isNotNull())
+                .and(REMINDER.REMINDER_SENT.eq(false))
+                .and(REMINDER.DEADLINE.le(OffsetDateTime.now(ZoneId.of("Europe/Moscow"))))
+                .fetchInto(Reminder.class);
     }
 
     private OffsetDateTime calculateRemindAt(RequestReminder request) {
