@@ -103,7 +103,8 @@ public class CommandOrchestrator {
         if (deadlineDto.getDeadline() == null) {
             return "Не смог понять дедлайн. Напиши его, пожалуйста, например: \"завтра\", \"на пятницу\" или \"завтра в 15:00\".";
         }
-        String result = taskService.createTask(taskMapper.toRequestTask(chatId, state.getPayload(), deadlineDto));
+        int remindBefore = telegramUserService.getHoursRemind(chatId);
+        String result = taskService.createTask(taskMapper.toRequestTask(chatId, remindBefore, state.getPayload(), deadlineDto));
         userDialogStateService.deleteTempRecord(chatId);
         return result;
     }

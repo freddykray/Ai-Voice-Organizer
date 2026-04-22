@@ -1,4 +1,4 @@
-package by.freddykray.AI.Voice.Organizer.model;
+package by.freddykray.AI.Voice.Organizer.model.reminder;
 
 import lombok.Data;
 
@@ -13,5 +13,6 @@ public class Reminder {
     private Instant deadline;
     private Instant remindAt;
     private boolean reminderSent;
+    private boolean isHasExactTime;
     private Instant createdAt;
 }

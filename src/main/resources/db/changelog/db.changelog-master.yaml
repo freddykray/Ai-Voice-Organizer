@@ -9,6 +9,8 @@ databaseChangeLog:
       file: db/changelog/004-create-reminder-table.yaml
   - include:
       file: db/changelog/005-create-idea-table.yaml
+  - include:
+      file: db/changelog/006-add-HasExactTime-to-reminder.yaml
 
 
 

@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-add-HasExactTime-to-reminder
+      author: freddykray
+      changes:
+        - addColumn:
+            tableName:  reminder
+            columns:
+              - column:
+                  name: has_exact_time
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: true
